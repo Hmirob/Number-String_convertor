@@ -4,15 +4,15 @@ import com.shmyrov.testtask.ConvertInstance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 //
 @Service
 @Slf4j
 public class ConverterService {
     private final static Map<Integer, String> indeclinableOrderNumbersToStringMap = new HashMap<>();
+    private final static Map<String, Integer> indeclinableOrderStringToNumbersMap = new HashMap<>();
 
     public ConverterService() {
         indeclinableOrderNumbersToStringMap.put(0, "");
@@ -52,10 +52,37 @@ public class ConverterService {
         indeclinableOrderNumbersToStringMap.put(700, "семьсот");
         indeclinableOrderNumbersToStringMap.put(800, "восемьсот");
         indeclinableOrderNumbersToStringMap.put(900, "девятьсот");
+
+        for (Map.Entry<Integer, String> entry : indeclinableOrderNumbersToStringMap.entrySet()) {
+            indeclinableOrderStringToNumbersMap.put(entry.getValue(), entry.getKey());
+        }
     }
 
-    public Integer stringToNumber(String value) {
-        return 0;
+    public Long stringToNumber(String value) {
+        long sum = 0;
+        long tmpSum = 0;
+        for (String x : List.of(value.split(" "))) {
+            if (indeclinableOrderStringToNumbersMap.containsKey(x)) {
+                tmpSum += indeclinableOrderStringToNumbersMap.get(x);
+            } else if (x.equals("одна")) {
+                tmpSum += 1;
+            } else if (x.equals("две")) {
+                tmpSum += 2;
+            } else {
+                if (tmpSum == 0) {
+                    tmpSum = 1;
+                }
+                if (x.contains("миллиард")) {
+                    sum += tmpSum * 1_000_000_000;
+                } else if (x.contains("миллион")) {
+                    sum += tmpSum * 1_000_000;
+                } else if (x.contains("тысяч")) {
+                    sum += tmpSum * 1000;
+                }
+                tmpSum = 0;
+            }
+        }
+        return sum + tmpSum;
     }
 
     public String numberToString(Long value) {

@@ -151,7 +151,10 @@ class TestTaskApplicationTests {
     Collection<DynamicTest> getDynamicTestsFromMap(Map<Long, String> map) {
         return map.entrySet().stream().map((entry) -> DynamicTest.dynamicTest(
                 entry.getKey().toString(),
-                () -> assertEquals(entry.getValue(), converterService.numberToString(entry.getKey()))
+                () -> {
+                    assertEquals(entry.getValue(), converterService.numberToString(entry.getKey()));
+                    assertEquals(entry.getKey(), converterService.stringToNumber(entry.getValue()));
+                }
         )).toList();
     }
 
