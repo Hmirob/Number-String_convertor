@@ -6,11 +6,15 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
+import {useSearchParams} from "react-router-dom";
+import {Alert} from "@mui/material";
 
 
 const theme = createTheme();
 
 export default function SignIn() {
+    const [searchParams, setSearchParams] = useSearchParams();
+
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">
@@ -47,6 +51,9 @@ export default function SignIn() {
                             id="password"
                             autoComplete="current-password"
                         />
+                        <Alert severity="error" style={{visibility: searchParams.has("error") ? "visible" : "hidden"}}>
+                            Ошибка входа
+                        </Alert>
                         <Button
                             type="submit"
                             fullWidth

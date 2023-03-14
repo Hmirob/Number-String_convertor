@@ -1,27 +1,51 @@
 package com.shmyrov.testtask.controllers;
 
+import com.shmyrov.testtask.database.ConvertLog;
+import com.shmyrov.testtask.database.ConvertLogRepository;
+import com.shmyrov.testtask.exceptions.BadParametersToConvert;
 import com.shmyrov.testtask.services.ConverterService;
-import lombok.SneakyThrows;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
+
 @RestController
 public class MainController {
 
-    public final ConverterService converterService;
+    final ConverterService converterService;
 
-    public MainController(ConverterService converterService) {
+    final ConvertLogRepository convertLogRepository;
+
+    public MainController(ConverterService converterService, ConvertLogRepository convertLogRepository) {
         this.converterService = converterService;
+        this.convertLogRepository = convertLogRepository;
     }
 
     @GetMapping("/convert")
-    @SneakyThrows
-    public String convert(@RequestParam String type, @RequestParam String value) {
-        return switch (type) {
-            case "NumberToString" -> converterService.numberToString(Long.valueOf(value));
-            case "StringToNumber" -> converterService.stringToNumber(value).toString();
-            default -> throw new Exception("Do you now what you want?");
-        };
+    public String convert(@RequestParam String type, @RequestParam String value, Principal principal) throws BadParametersToConvert {
+        ConvertLog convertLog = new ConvertLog();
+        convertLog.setType(type);
+        convertLog.setInnerValue(value);
+        convertLog.setUserName(principal.getName());
+
+        String convertedValue;
+        try {
+            switch (type) {
+                case "NumberToString":
+                    convertedValue = converterService.numberToString(Long.valueOf(value));
+                    convertLog.setOuterValue(convertedValue);
+                    return convertedValue;
+                case "StringToNumber":
+                    convertedValue = converterService.stringToNumber(value).toString();
+                    convertLog.setOuterValue(convertedValue);
+                    return convertedValue;
+                default:
+                    throw new BadParametersToConvert();
+            }
+        } finally {
+            convertLogRepository.save(convertLog);
+        }
+
     }
 }
