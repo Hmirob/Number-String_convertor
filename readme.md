@@ -60,10 +60,10 @@ mvn clean spring-boot:run -Pdev
 * _user user_
 * _user2 user2_
 ```http request
-http://localhost:8080/morda/login
+/morda/login
 ```
 
 Возвращает react-форму для конвертации
 ```http request
-http://localhost:8080/morda
+/morda
 ```
