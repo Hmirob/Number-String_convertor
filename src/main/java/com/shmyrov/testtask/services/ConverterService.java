@@ -1,11 +1,14 @@
 package com.shmyrov.testtask.services;
 
 import com.shmyrov.testtask.ConvertInstance;
+import com.shmyrov.testtask.exceptions.BadParametersToConvert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 //
 @Service
@@ -58,7 +61,11 @@ public class ConverterService {
         }
     }
 
-    public Long stringToNumber(String value) {
+    public Long stringToNumber(String value) throws BadParametersToConvert {
+        value = value.toLowerCase();
+        if (value.equals("ноль")) {
+            return 0L;
+        }
         long sum = 0;
         long tmpSum = 0;
         for (String x : List.of(value.split(" "))) {
@@ -78,6 +85,8 @@ public class ConverterService {
                     sum += tmpSum * 1_000_000;
                 } else if (x.contains("тысяч")) {
                     sum += tmpSum * 1000;
+                } else {
+                    throw new BadParametersToConvert();
                 }
                 tmpSum = 0;
             }
@@ -89,16 +98,7 @@ public class ConverterService {
         if (value == 0) {
             return "ноль";
         }
-        if (value >= 1_000_000_000) {
-            return getMilliardsString(new ConvertInstance(value));
-        }
-        if (value >= 1_000_000) {
-            return getMillionsString(new ConvertInstance(value));
-        }
-        if (value >= 1000) {
-            return getThousandsString(new ConvertInstance(value));
-        }
-        return getHundredsString(value.intValue());
+        return getMilliardsString(new ConvertInstance(value));
     }
 
     private String getMilliardsString(ConvertInstance instance) {
